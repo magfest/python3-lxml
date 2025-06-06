@@ -1,0 +1,58 @@
+name: Build Python Wheels
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build_wheels:
+    name: Build ${{ matrix.python-version }} wheels on ${{ matrix.runner_arch }}
+    runs-on: ${{ matrix.runner_os }}-${{ matrix.runner_arch }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.12']
+        include:
+          - runner_os: ubuntu-latest
+            runner_arch: x64
+            cibw_build_value: "cp*-manylinux_x86_64 cp*-musllinux_x86_64"
+
+          - runner_os: ubuntu-latest
+            runner_arch: arm64
+            cibw_build_value: "cp*-manylinux_aarch64 cp*-musllinux_aarch64"
+
+          - runner_os: macos-latest
+            runner_arch: arm64
+            cibw_build_value: "cp*-macosx_x86_64 cp*-macosx_arm64"
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install cibuildwheel
+      run: pip install cibuildwheel==2.23.3
+
+    - name: Build wheels
+      env:
+        CIBW_BUILD: ${{ matrix.cibw_build_value }}
+      run: cibuildwheel --output-dir wheelhouse
+
+    - name: Upload wheels
+      uses: actions/upload-artifact@v4
+      with:
+        name: wheels-python${{ matrix.python-version }}-${{ matrix.runner_arch }}
+        path: ./wheelhouse/*.whl
