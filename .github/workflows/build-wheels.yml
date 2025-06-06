@@ -29,9 +29,9 @@ jobs:
             runner_arch: arm64
             cibw_build_value: "cp*-manylinux_aarch64 cp*-musllinux_aarch64"
 
-          - runner_os: macos-latest
-            runner_arch: arm64
-            cibw_build_value: "cp*-macosx_x86_64 cp*-macosx_arm64"
+          #- runner_os: macos-latest
+          #  runner_arch: arm64
+          #  cibw_build_value: "cp*-macosx_x86_64 cp*-macosx_arm64"
 
     steps:
     - uses: actions/checkout@v4
